@@ -18,9 +18,7 @@ jobs:
           go-version: 1.24.5
 
       - name: Build the executables
-        run:
-          - go build
-          - mv io-exporter io-exporter-amd64-linux-${{ github.ref_name}}
+        run: go build -o io-exporter-amd64-linux-${{ github.ref_name}}
         
       - name: Upload the binaries
         uses: svenstaro/upload-release-action@v2
