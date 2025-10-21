@@ -67,9 +67,14 @@ To run locally:
 ```default
 mkdir t
 chmod 1777 t
-docker compose run -v ./t:/pvc ioexporter /pvc/blah
+docker compose run -v ./t:/pvc ioexporter /pvc/testfile
 ```
 
+Or use the pre-build image:
+
+```default
+docker run -u `id -u $USER` -v ./t:/pvc ghcr.io/tlinden/io-exporter:latest /pvc/testfile
+```
 
 # Report bugs
 
