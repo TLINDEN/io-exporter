@@ -21,7 +21,7 @@ func Run() {
 	metrics := NewMetrics(conf)
 	alloc := NewAlloc()
 
-	setLogger(os.Stdout)
+	setLogger(os.Stdout, conf.Debug)
 
 	go func() {
 		for {
@@ -32,6 +32,7 @@ func Run() {
 			// ns => s
 			now := time.Now()
 			elapsed := float64(now.Sub(start).Nanoseconds()) / 10000000000
+			slog.Debug("elapsed time", "elapsed", elapsed, "result", result)
 
 			metrics.Set(result, elapsed)
 

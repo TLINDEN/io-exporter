@@ -23,6 +23,7 @@ Options:
 -s --sleeptime <int>          Time to sleep between checks (default: 5s)
 -l --label     <label=value>  Add label to exported metric
 -i --internals                Also add labels about resource usage
+-d --debug                    Enable debug log level
 -h --help                     Show help
 -v --version                  Show program version`
 )
@@ -32,10 +33,11 @@ type Config struct {
 	Showversion bool     `koanf:"version"`   // -v
 	Showhelp    bool     `koanf:"help"`      // -h
 	Internals   bool     `koanf:"internals"` // -i
+	Debug       bool     `koanf:"debug"`     // -d
 	Label       []string `koanf:"label"`     // -v
 	Timeout     int      `koanf:"timeout"`   // -t
 	Port        int      `koanf:"port"`      // -p
-	Sleeptime   int      `koanf:"sleep"`     // -s
+	Sleeptime   int      `koanf:"sleeptime"` // -s
 
 	File   string
 	Labels []Label
@@ -56,6 +58,7 @@ func InitConfig(output io.Writer) (*Config, error) {
 	// parse commandline flags
 	flagset.BoolP("version", "v", false, "show program version")
 	flagset.BoolP("help", "h", false, "show help")
+	flagset.BoolP("debug", "d", false, "enable debug logs")
 	flagset.BoolP("internals", "i", false, "add internal metrics")
 	flagset.StringArrayP("label", "l", nil, "additional labels")
 	flagset.IntP("timeout", "t", 1, "timeout for file operation in seconds")
