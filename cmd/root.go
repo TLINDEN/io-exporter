@@ -46,5 +46,7 @@ func Run() {
 
 	slog.Info("start testing and serving metrics on localhost", "port", conf.Port)
 	slog.Info("test setup", "file", conf.File, "labels", strings.Join(conf.Label, ","))
-	http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil); err != nil {
+		log.Fatal(err)
+	}
 }
