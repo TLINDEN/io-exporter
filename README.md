@@ -54,6 +54,23 @@ Or, if you have GNU Make installed, just execute:
 go build
 ```
 
+## Docker
+
+To build:
+
+```default
+docker compose build
+```
+
+To run locally:
+
+```default
+mkdir t
+chmod 1777 t
+docker compose run -v ./t:/pvc ioexporter /pvc/blah
+```
+
+
 # Report bugs
 
 [Please open an issue](https://github.com/TLINDEN/io-exporter/issues). Thanks!
