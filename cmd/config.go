@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	Version = `v0.0.1`
+	Version = `v0.0.2`
 	SLEEP   = 5
 	Usage   = `io-exporter [options] <file>
 Options:
