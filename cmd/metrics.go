@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 )
 
 // custom labels
@@ -49,7 +50,23 @@ func NewMetrics(conf *Config) *Metrics {
 		registry: prometheus.NewRegistry(),
 	}
 
-	metrics.registry.MustRegister(metrics.run, metrics.latency)
+	if conf.Internals {
+		metrics.registry.MustRegister(
+			metrics.run,
+			metrics.latency,
+
+			// we  might need  to take  care of the  exporter in  terms of
+			// resources, so also report those internals
+			collectors.NewGoCollector(
+				collectors.WithGoCollectorMemStatsMetricsDisabled(),
+			),
+			collectors.NewProcessCollector(
+				collectors.ProcessCollectorOpts{},
+			),
+		)
+	} else {
+		metrics.registry.MustRegister(metrics.run, metrics.latency)
+	}
 
 	// static labels
 	metrics.values[0] = conf.File
