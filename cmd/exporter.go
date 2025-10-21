@@ -108,7 +108,7 @@ func runcheck(file string, alloc *Alloc) bool {
 
 	// compare
 	if !bytes.Equal(alloc.writeBlock, alloc.readBlock) {
-		return die(errors.New("Read not the same as written"), nil)
+		return die(errors.New("read not the same as written"), nil)
 	}
 
 	return true
