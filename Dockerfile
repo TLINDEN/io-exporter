@@ -11,7 +11,7 @@ WORKDIR /work
 COPY go.mod .
 COPY . .
 RUN go mod download
-RUN go build
+RUN make
 
 FROM alpine:latest
 LABEL maintainer="Thomas von Dein <git@daemon.de>"
