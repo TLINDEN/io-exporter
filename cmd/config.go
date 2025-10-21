@@ -19,10 +19,11 @@ const (
 	SLEEP   = 5
 	Usage   = `io-exporter [options] <file>
 Options:
--t --timeout <int>          When should the operation timeout in seconds
--l --label   <label=value>  Add label to exported metric
--h --help                   Show help
--v --version                Show program version`
+-t --timeout   <int>          When should the operation timeout in seconds
+-s --sleeptime <int>          Time to sleep between checks (default: 5s)
+-l --label     <label=value>  Add label to exported metric
+-h --help                     Show help
+-v --version                  Show program version`
 )
 
 // config via commandline flags
@@ -32,6 +33,7 @@ type Config struct {
 	Label       []string `koanf:"label"`   // -v
 	Timeout     int      `koanf:"timeout"` // -t
 	Port        int      `koanf:"port"`    // -p
+	Sleeptime   int      `koanf:"sleep"`   // -s
 
 	File   string
 	Labels []Label
@@ -55,6 +57,7 @@ func InitConfig(output io.Writer) (*Config, error) {
 	flagset.StringArrayP("label", "l", nil, "additional labels")
 	flagset.IntP("timeout", "t", 1, "timeout for file operation in seconds")
 	flagset.IntP("port", "p", 9187, "prometheus metrics port to listen to")
+	flagset.IntP("sleeptime", "s", 5, "time to sleep between checks (default: 5s)")
 
 	if err := flagset.Parse(os.Args[1:]); err != nil {
 		return nil, fmt.Errorf("failed to parse program arguments: %w", err)

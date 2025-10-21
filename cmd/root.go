@@ -35,7 +35,7 @@ func Run() {
 
 			metrics.Set(result, elapsed)
 
-			time.Sleep(SLEEP * time.Second)
+			time.Sleep(time.Duration(conf.Sleeptime) * time.Second)
 		}
 	}()
 
