@@ -41,7 +41,7 @@ func NewAlloc() *Alloc {
 func (alloc *Alloc) Compare() bool {
 	// compare
 	if !bytes.Equal(alloc.writeBlock, alloc.readBlock) {
-		return die(errors.New("read not the same as written"), nil)
+		return report(errors.New("read not the same as written"), nil)
 	}
 
 	return true

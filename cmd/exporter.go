@@ -11,7 +11,7 @@ import (
 	"github.com/ncw/directio"
 )
 
-func die(err error, fd *os.File) bool {
+func report(err error, fd *os.File) bool {
 	slog.Debug("failed to check io", "error", err)
 
 	if fd != nil {
@@ -45,7 +45,7 @@ func runExporter(file string, alloc *Alloc, timeout time.Duration, op int) bool 
 	for {
 		select {
 		case <-ctx.Done():
-			return die(ctx.Err(), nil)
+			return report(ctx.Err(), nil)
 		case <-run:
 			return res
 		}
@@ -64,20 +64,20 @@ func runcheck_r(file string, alloc *Alloc) bool {
 	// read
 	in, err := directio.OpenFile(file, os.O_RDONLY, 0640)
 	if err != nil {
-		die(err, nil)
+		report(err, nil)
 	}
 
 	n, err := io.ReadFull(in, alloc.readBlock)
 	if err != nil {
-		return die(err, in)
+		return report(err, in)
 	}
 
 	if n != len(alloc.writeBlock) {
-		return die(errors.New("failed to read block"), in)
+		return report(errors.New("failed to read block"), in)
 	}
 
 	if err := in.Close(); err != nil {
-		return die(err, nil)
+		return report(err, nil)
 	}
 
 	return true
@@ -96,7 +96,7 @@ func runcheck_w(file string, alloc *Alloc) bool {
 	// write
 	fd, err := directio.OpenFile(file, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0640)
 	if err != nil {
-		die(err, nil)
+		report(err, nil)
 	}
 
 	for i := 0; i < len(alloc.writeBlock); i++ {
@@ -105,15 +105,15 @@ func runcheck_w(file string, alloc *Alloc) bool {
 
 	n, err := fd.Write(alloc.writeBlock)
 	if err != nil {
-		return die(err, fd)
+		return report(err, fd)
 	}
 
 	if n != len(alloc.writeBlock) {
-		return die(errors.New("failed to write block"), fd)
+		return report(errors.New("failed to write block"), fd)
 	}
 
 	if err := fd.Close(); err != nil {
-		return die(err, nil)
+		return report(err, nil)
 	}
 
 	return true
