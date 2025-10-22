@@ -7,17 +7,10 @@ import (
 	"github.com/ncw/directio"
 )
 
-const (
-	O_R = iota
-	O_W
-	O_RW
-)
-
 // aligned allocs used for testing
 type Alloc struct {
 	writeBlock []byte
 	readBlock  []byte
-	mode       int
 }
 
 // zero the memory blocks

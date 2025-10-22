@@ -28,6 +28,10 @@ Options:
 -d --debug                    Enable debug log level
 -h --help                     Show help
 -v --version                  Show program version`
+
+	O_R = iota
+	O_W
+	O_RW
 )
 
 // config via commandline flags
