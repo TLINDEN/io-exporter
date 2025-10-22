@@ -1,6 +1,11 @@
 package cmd
 
-import "github.com/ncw/directio"
+import (
+	"bytes"
+	"errors"
+
+	"github.com/ncw/directio"
+)
 
 // aligned allocs used for testing
 type Alloc struct {
@@ -24,4 +29,13 @@ func NewAlloc() *Alloc {
 		writeBlock: directio.AlignedBlock(directio.BlockSize),
 		readBlock:  directio.AlignedBlock(directio.BlockSize),
 	}
+}
+
+func (alloc *Alloc) Compare() bool {
+	// compare
+	if !bytes.Equal(alloc.writeBlock, alloc.readBlock) {
+		return report(errors.New("read not the same as written"), nil)
+	}
+
+	return true
 }

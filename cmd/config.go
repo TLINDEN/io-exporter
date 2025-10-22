@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	Version = `v0.0.4`
+	Version = `v0.0.5`
 	SLEEP   = 5
 	Usage   = `io-exporter [options] <file>
 Options:
@@ -23,9 +23,15 @@ Options:
 -s --sleeptime <int>          Time to sleep between checks (default: 5s)
 -l --label     <label=value>  Add label to exported metric
 -i --internals                Also add labels about resource usage
+-r --read                     Only execute the read test
+-w --write                    Only execute the write test
 -d --debug                    Enable debug log level
 -h --help                     Show help
 -v --version                  Show program version`
+
+	O_R = iota
+	O_W
+	O_RW
 )
 
 // config via commandline flags
@@ -34,6 +40,8 @@ type Config struct {
 	Showhelp    bool     `koanf:"help"`      // -h
 	Internals   bool     `koanf:"internals"` // -i
 	Debug       bool     `koanf:"debug"`     // -d
+	ReadMode    bool     `koanf:"read"`      // -r
+	WriteMode   bool     `koanf:"write"`     // -w
 	Label       []string `koanf:"label"`     // -v
 	Timeout     int      `koanf:"timeout"`   // -t
 	Port        int      `koanf:"port"`      // -p
@@ -60,6 +68,8 @@ func InitConfig(output io.Writer) (*Config, error) {
 	flagset.BoolP("help", "h", false, "show help")
 	flagset.BoolP("debug", "d", false, "enable debug logs")
 	flagset.BoolP("internals", "i", false, "add internal metrics")
+	flagset.BoolP("read", "r", false, "only execute the read test")
+	flagset.BoolP("write", "w", false, "only execute the write test")
 	flagset.StringArrayP("label", "l", nil, "additional labels")
 	flagset.IntP("timeout", "t", 1, "timeout for file operation in seconds")
 	flagset.IntP("port", "p", 9187, "prometheus metrics port to listen to")
@@ -101,6 +111,11 @@ func InitConfig(output io.Writer) (*Config, error) {
 		}
 
 		conf.Labels = append(conf.Labels, Label{Name: parts[0], Value: parts[1]})
+	}
+
+	if !conf.ReadMode && !conf.WriteMode {
+		conf.ReadMode = true
+		conf.WriteMode = true
 	}
 
 	return conf, nil

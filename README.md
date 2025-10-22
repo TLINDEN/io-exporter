@@ -14,10 +14,15 @@ specified via commandline.
 ```default
 io-exporter [options] <file>
 Options:
--t --timeout <int>          When should the operation timeout in seconds
--l --label   <label=value>  Add label to exported metric
--h --help                   Show help
--v --version                Show program version
+-t --timeout   <int>          When should the operation timeout in seconds
+-s --sleeptime <int>          Time to sleep between checks (default: 5s)
+-l --label     <label=value>  Add label to exported metric
+-i --internals                Also add labels about resource usage
+-r --read                     Only execute the read test
+-w --write                    Only execute the write test
+-d --debug                    Enable debug log level
+-h --help                     Show help
+-v --version                  Show program version
 ```
 
 ## Output
@@ -31,13 +36,19 @@ io-exporter -l foo=bar -l blah=blubb t/blah
 You'll get such metrics:
 
 ```default
-# HELP io_exporter_io_latency how long does the operation take in seconds
-# TYPE io_exporter_io_latency gauge
-io_exporter_io_latency{file="/tmp/blah",maxwait="1",namespace="debug",pod="foo1"} 0.0001142815
 # HELP io_exporter_io_operation whether io is working on the pvc, 1=ok, 0=fail
 # TYPE io_exporter_io_operation gauge
-io_exporter_io_operation{file="/tmp/blah",maxwait="1",namespace="debug",pod="foo1"} 1
+io_exporter_io_operation{blah="blubb",exectime="1761148383705",file="t/blah",foo="bar",maxwait="1"} 1
+# HELP io_exporter_io_read_latency how long does the read operation take in seconds
+# TYPE io_exporter_io_read_latency gauge
+io_exporter_io_read_latency{blah="blubb",exectime="1761148383705",file="t/blah",foo="bar",maxwait="1"} 0.0040411716
+# HELP io_exporter_io_write_latency how long does the write operation take in seconds
+# TYPE io_exporter_io_write_latency gauge
+io_exporter_io_write_latency{blah="blubb",exectime="1761148383705",file="t/blah",foo="bar",maxwait="1"} 0
 ```
+
+You may  also restrict the exporter  to only test read  (`-r` flag) or
+write (`-w` flag) operation.
 
 ## Installation
 
