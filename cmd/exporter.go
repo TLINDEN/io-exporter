@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -24,8 +23,8 @@ func die(err error, fd *os.File) bool {
 	return false
 }
 
-// Calls runcheck() with timeout
-func runExporter(file string, alloc *Alloc, timeout time.Duration) bool {
+// Calls runcheck* with timeout
+func runExporter(file string, alloc *Alloc, timeout time.Duration, op int) bool {
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -34,7 +33,12 @@ func runExporter(file string, alloc *Alloc, timeout time.Duration) bool {
 	var res bool
 
 	go func() {
-		res = runcheck(file, alloc)
+		switch op {
+		case O_R:
+			res = runcheck_r(file, alloc)
+		case O_W:
+			res = runcheck_w(file, alloc)
+		}
 		run <- struct{}{}
 	}()
 
@@ -50,20 +54,45 @@ func runExporter(file string, alloc *Alloc, timeout time.Duration) bool {
 
 // Checks file io on the specified path:
 //
-// - open the file (create if it doesnt exist)
-// - truncate it if it already exists
-// - write some data to it
-// - closes the file
-// - re-opens it for reading
+// - opens it for reading
 // - reads the block
-// - compares if written block is equal to read block
 // - closes file again
 //
 // Returns false if anything failed during that sequence,
 // true otherwise.
-func runcheck(file string, alloc *Alloc) bool {
-	alloc.Clean()
+func runcheck_r(file string, alloc *Alloc) bool {
+	// read
+	in, err := directio.OpenFile(file, os.O_RDONLY, 0640)
+	if err != nil {
+		die(err, nil)
+	}
 
+	n, err := io.ReadFull(in, alloc.readBlock)
+	if err != nil {
+		return die(err, in)
+	}
+
+	if n != len(alloc.writeBlock) {
+		return die(errors.New("failed to read block"), in)
+	}
+
+	if err := in.Close(); err != nil {
+		return die(err, nil)
+	}
+
+	return true
+}
+
+// Checks file io on the specified path:
+//
+// - open the file (create if it doesnt exist)
+// - truncate it if it already exists
+// - write some data to it
+// - closes the file
+//
+// Returns false if anything failed during that sequence,
+// true otherwise.
+func runcheck_w(file string, alloc *Alloc) bool {
 	// write
 	fd, err := directio.OpenFile(file, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0640)
 	if err != nil {
@@ -85,30 +114,6 @@ func runcheck(file string, alloc *Alloc) bool {
 
 	if err := fd.Close(); err != nil {
 		return die(err, nil)
-	}
-
-	// read
-	in, err := directio.OpenFile(file, os.O_RDONLY, 0640)
-	if err != nil {
-		die(err, nil)
-	}
-
-	n, err = io.ReadFull(in, alloc.readBlock)
-	if err != nil {
-		return die(err, in)
-	}
-
-	if n != len(alloc.writeBlock) {
-		return die(errors.New("failed to read block"), fd)
-	}
-
-	if err := in.Close(); err != nil {
-		return die(err, nil)
-	}
-
-	// compare
-	if !bytes.Equal(alloc.writeBlock, alloc.readBlock) {
-		return die(errors.New("read not the same as written"), nil)
 	}
 
 	return true

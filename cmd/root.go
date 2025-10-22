@@ -30,16 +30,28 @@ func Run() {
 
 	go func() {
 		for {
-			start := time.Now()
+			var result_r, result_w bool
+			var elapsed_w, elapsed_r float64
 
-			result := runExporter(conf.File, alloc, time.Duration(conf.Timeout)*time.Second)
+			alloc.Clean()
 
-			// ns => s
-			now := time.Now()
-			elapsed := float64(now.Sub(start).Nanoseconds()) / 10000000000
-			slog.Debug("elapsed time", "elapsed", elapsed, "result", result)
+			if conf.WriteMode {
+				elapsed_w, result_w = measure(conf.File, alloc, conf.Timeout, O_W)
+				slog.Debug("elapsed write time", "elapsed", elapsed_w, "result", result_w)
+			}
 
-			metrics.Set(result, elapsed)
+			if conf.ReadMode {
+				elapsed_r, result_r = measure(conf.File, alloc, conf.Timeout, O_R)
+				slog.Debug("elapsed read time", "elapsed", elapsed_r, "result", result_r)
+			}
+
+			if conf.WriteMode && conf.ReadMode {
+				if !alloc.Compare() {
+					result_r = false
+				}
+			}
+
+			metrics.Set(result_r, result_w, elapsed_r, elapsed_w)
 
 			time.Sleep(time.Duration(conf.Sleeptime) * time.Second)
 		}
@@ -52,7 +64,21 @@ func Run() {
 
 	slog.Info("start testing and serving metrics on localhost", "port", conf.Port)
 	slog.Info("test setup", "file", conf.File, "labels", strings.Join(conf.Label, ","))
+	slog.Info("measuring", "read", conf.ReadMode, "write", conf.WriteMode, "timeout(s)", conf.Timeout)
+
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func measure(file string, alloc *Alloc, timeout int, mode int) (float64, bool) {
+	start := time.Now()
+
+	result := runExporter(file, alloc, time.Duration(timeout)*time.Second, mode)
+
+	// ns => s
+	now := time.Now()
+	elapsed := float64(now.Sub(start).Nanoseconds()) / 10000000000
+
+	return elapsed, result
 }
