@@ -19,7 +19,7 @@ func Run() {
 	}
 
 	if conf.Showversion {
-		fmt.Printf("This is io-exporter version %d\n", Version)
+		fmt.Printf("This is io-exporter version %s\n", Version)
 		os.Exit(0)
 	}
 
