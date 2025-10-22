@@ -31,4 +31,10 @@ go.work.sum
 # .idea/
 # .vscode/
 
+# build residue
 io-exporter
+
+# test deployments
+*.yaml
+
+
