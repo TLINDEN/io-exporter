@@ -18,6 +18,11 @@ func Run() {
 		log.Fatal(err)
 	}
 
+	if conf.Showversion {
+		fmt.Printf("This is io-exporter version %s\n", Version)
+		os.Exit(0)
+	}
+
 	metrics := NewMetrics(conf)
 	alloc := NewAlloc()
 
