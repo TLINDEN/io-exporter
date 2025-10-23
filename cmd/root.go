@@ -59,7 +59,7 @@ func report(err error, fd *os.File) bool {
 		failure = "operation timed out"
 	}
 
-	slog.Debug("failed to check io", "error", failure)
+	slog.Error("io error", "error", failure)
 
 	if fd != nil {
 		if err := fd.Close(); err != nil {
