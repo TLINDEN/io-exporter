@@ -38,10 +38,13 @@ func Run() {
 		promhttp.HandlerOpts{},
 	))
 
-	slog.Info("io-exporter starting up", "version", Version)
-	slog.Info("   serving metrics", "host", "localhost", "port", conf.Port)
-	slog.Info("   test setup", "file", conf.File, "labels", strings.Join(conf.Label, ","))
-	slog.Info("   measuring", "read", conf.ReadMode, "write", conf.WriteMode, "timeout(s)", conf.Timeout)
+	slog.Info(" ╭──")
+	slog.Info(" │ io-exporter starting up", "version", Version)
+	slog.Info(" │ serving metrics", "host", "localhost", "port", conf.Port)
+	slog.Info(" │ test setup", "file", conf.File, "labels", strings.Join(conf.Label, ","))
+	slog.Info(" │ measuring", "read", conf.ReadMode, "write", conf.WriteMode, "timeout(s)", conf.Timeout)
+	slog.Info(" │ debugging", "enabled", conf.Debug)
+	slog.Info(" ╰──")
 
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil); err != nil {
 		log.Fatal(err)
