@@ -53,7 +53,7 @@ func (exp *Exporter) RunIOchecks() *sync.WaitGroup {
 				slog.Debug("elapsed read time", "elapsed", res_r.elapsed, "result", res_r.result)
 			}
 
-			if exp.conf.WriteMode && exp.conf.ReadMode {
+			if (exp.conf.WriteMode && exp.conf.ReadMode) && (res_r.result && res_w.result) {
 				if !exp.alloc.Compare() {
 					res_r.result = false
 				}
