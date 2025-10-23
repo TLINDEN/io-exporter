@@ -1,3 +1,7 @@
+[![Actions](https://github.com/tlinden/io-exporter/actions/workflows/ci.yaml/badge.svg)](https://github.com/tlinden/io-exporter/actions)
+[![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/tlinden/io-exporter/blob/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tlinden/io-exporter)](https://goreportcard.com/report/github.com/tlinden/io-exporter)
+
 # io-exporter
 
 Report if a given filesystem is operating properly
