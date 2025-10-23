@@ -54,11 +54,17 @@ func Run() {
 }
 
 func report(err error, fd *os.File) bool {
-	slog.Debug("failed to check io", "error", err)
+	failure := err.Error()
+	if err.Error() == "context deadline exceeded" {
+		failure = "operation timed out"
+	}
+
+	slog.Debug("failed to check io", "error", failure)
 
 	if fd != nil {
 		if err := fd.Close(); err != nil {
-			slog.Debug("failed to close filehandle", "error", err)
+
+			slog.Debug("failed to close filehandle", "error", failure)
 		}
 	}
 
