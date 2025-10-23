@@ -11,33 +11,85 @@ import (
 	"github.com/ncw/directio"
 )
 
-func report(err error, fd *os.File) bool {
-	slog.Debug("failed to check io", "error", err)
-
-	if fd != nil {
-		if err := fd.Close(); err != nil {
-			slog.Debug("failed to close filehandle", "error", err)
-		}
-	}
-
-	return false
+// our primary container for the io checks
+type Exporter struct {
+	conf    *Config
+	alloc   *Alloc
+	metrics *Metrics
 }
 
-// Calls runcheck* with timeout
-func runExporter(file string, alloc *Alloc, timeout time.Duration, op int) bool {
+type Result struct {
+	result  bool
+	elapsed float64
+}
+
+func NewExporter(conf *Config, alloc *Alloc, metrics *Metrics) *Exporter {
+	return &Exporter{
+		conf:    conf,
+		alloc:   alloc,
+		metrics: metrics,
+	}
+}
+
+// starts the primary go-routine, which will run the io checks for ever
+func (exp *Exporter) RunIOchecks() {
+	go func() {
+		for {
+			var res_r, res_w Result
+
+			exp.alloc.Clean()
+
+			if exp.conf.WriteMode {
+				res_w = exp.measure(O_W)
+				slog.Debug("elapsed write time", "elapsed", res_w.elapsed, "result", res_w.result)
+			}
+
+			if exp.conf.ReadMode {
+				res_r = exp.measure(O_R)
+				slog.Debug("elapsed read time", "elapsed", res_r.elapsed, "result", res_r.result)
+			}
+
+			if exp.conf.WriteMode && exp.conf.ReadMode {
+				if !exp.alloc.Compare() {
+					res_r.result = false
+				}
+			}
+
+			exp.metrics.Set(res_r, res_w)
+
+			time.Sleep(time.Duration(exp.conf.Sleeptime) * time.Second)
+		}
+	}()
+}
+
+// call an io measurement and collect time needed
+func (exp *Exporter) measure(mode int) Result {
+	start := time.Now()
+
+	result := exp.runExporter(mode)
+
+	// ns => s
+	now := time.Now()
+	elapsed := float64(now.Sub(start).Nanoseconds()) / 10000000000
+
+	return Result{elapsed: elapsed, result: result}
+}
+
+// Calls runcheck's with context timeout
+func (exp *Exporter) runExporter(mode int) bool {
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(exp.conf.Timeout)*time.Second)
 	defer cancel()
 
 	run := make(chan struct{}, 1)
 	var res bool
 
 	go func() {
-		switch op {
+		switch mode {
 		case O_R:
-			res = runcheck_r(file, alloc)
+			res = exp.runcheck_r()
 		case O_W:
-			res = runcheck_w(file, alloc)
+			res = exp.runcheck_w()
 		}
 		run <- struct{}{}
 	}()
@@ -60,19 +112,19 @@ func runExporter(file string, alloc *Alloc, timeout time.Duration, op int) bool 
 //
 // Returns false if anything failed during that sequence,
 // true otherwise.
-func runcheck_r(file string, alloc *Alloc) bool {
+func (exp *Exporter) runcheck_r() bool {
 	// read
-	in, err := directio.OpenFile(file, os.O_RDONLY, 0640)
+	in, err := directio.OpenFile(exp.conf.File, os.O_RDONLY, 0640)
 	if err != nil {
 		report(err, nil)
 	}
 
-	n, err := io.ReadFull(in, alloc.readBlock)
+	n, err := io.ReadFull(in, exp.alloc.readBlock)
 	if err != nil {
 		return report(err, in)
 	}
 
-	if n != len(alloc.writeBlock) {
+	if n != len(exp.alloc.writeBlock) {
 		return report(errors.New("failed to read block"), in)
 	}
 
@@ -92,23 +144,23 @@ func runcheck_r(file string, alloc *Alloc) bool {
 //
 // Returns false if anything failed during that sequence,
 // true otherwise.
-func runcheck_w(file string, alloc *Alloc) bool {
+func (exp *Exporter) runcheck_w() bool {
 	// write
-	fd, err := directio.OpenFile(file, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0640)
+	fd, err := directio.OpenFile(exp.conf.File, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0640)
 	if err != nil {
 		report(err, nil)
 	}
 
-	for i := 0; i < len(alloc.writeBlock); i++ {
-		alloc.writeBlock[i] = 'A'
+	for i := 0; i < len(exp.alloc.writeBlock); i++ {
+		exp.alloc.writeBlock[i] = 'A'
 	}
 
-	n, err := fd.Write(alloc.writeBlock)
+	n, err := fd.Write(exp.alloc.writeBlock)
 	if err != nil {
 		return report(err, fd)
 	}
 
-	if n != len(alloc.writeBlock) {
+	if n != len(exp.alloc.writeBlock) {
 		return report(errors.New("failed to write block"), fd)
 	}
 

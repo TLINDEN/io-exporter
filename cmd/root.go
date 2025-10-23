@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// Main program. starts 2 goroutines: our exporter and the http server
+// for  the  prometheus  metrics.  The  exporter  reports  measurement
+// results to prometheus metrics directly
 func Run() {
 	conf, err := InitConfig(os.Stdout)
 	if err != nil {
@@ -23,62 +25,40 @@ func Run() {
 		os.Exit(0)
 	}
 
-	metrics := NewMetrics(conf)
-	alloc := NewAlloc()
-
 	setLogger(os.Stdout, conf.Debug)
 
-	go func() {
-		for {
-			var result_r, result_w bool
-			var elapsed_w, elapsed_r float64
+	metrics := NewMetrics(conf)
+	alloc := NewAlloc()
+	exporter := NewExporter(conf, alloc, metrics)
 
-			alloc.Clean()
-
-			if conf.WriteMode {
-				elapsed_w, result_w = measure(conf.File, alloc, conf.Timeout, O_W)
-				slog.Debug("elapsed write time", "elapsed", elapsed_w, "result", result_w)
-			}
-
-			if conf.ReadMode {
-				elapsed_r, result_r = measure(conf.File, alloc, conf.Timeout, O_R)
-				slog.Debug("elapsed read time", "elapsed", elapsed_r, "result", result_r)
-			}
-
-			if conf.WriteMode && conf.ReadMode {
-				if !alloc.Compare() {
-					result_r = false
-				}
-			}
-
-			metrics.Set(result_r, result_w, elapsed_r, elapsed_w)
-
-			time.Sleep(time.Duration(conf.Sleeptime) * time.Second)
-		}
-	}()
+	exporter.RunIOchecks()
 
 	http.Handle("/metrics", promhttp.HandlerFor(
 		metrics.registry,
 		promhttp.HandlerOpts{},
 	))
 
-	slog.Info("start testing and serving metrics on localhost", "port", conf.Port)
-	slog.Info("test setup", "file", conf.File, "labels", strings.Join(conf.Label, ","))
-	slog.Info("measuring", "read", conf.ReadMode, "write", conf.WriteMode, "timeout(s)", conf.Timeout)
+	slog.Info(" ╭──")
+	slog.Info(" │ io-exporter starting up", "version", Version)
+	slog.Info(" │ serving metrics", "host", "localhost", "port", conf.Port)
+	slog.Info(" │ test setup", "file", conf.File, "labels", strings.Join(conf.Label, ","))
+	slog.Info(" │ measuring", "read", conf.ReadMode, "write", conf.WriteMode, "timeout(s)", conf.Timeout)
+	slog.Info(" │ debugging", "enabled", conf.Debug)
+	slog.Info(" ╰──")
 
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func measure(file string, alloc *Alloc, timeout int, mode int) (float64, bool) {
-	start := time.Now()
+func report(err error, fd *os.File) bool {
+	slog.Debug("failed to check io", "error", err)
 
-	result := runExporter(file, alloc, time.Duration(timeout)*time.Second, mode)
+	if fd != nil {
+		if err := fd.Close(); err != nil {
+			slog.Debug("failed to close filehandle", "error", err)
+		}
+	}
 
-	// ns => s
-	now := time.Now()
-	elapsed := float64(now.Sub(start).Nanoseconds()) / 10000000000
-
-	return elapsed, result
+	return false
 }

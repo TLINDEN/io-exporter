@@ -101,25 +101,25 @@ func NewMetrics(conf *Config) *Metrics {
 	return metrics
 }
 
-func (metrics *Metrics) Set(result_r, result_w bool, elapsed_r, elapsed_w float64) {
+func (metrics *Metrics) Set(result_r, result_w Result) {
 	var res float64
 
 	switch metrics.mode {
 	case O_RW:
-		if result_r && result_w {
+		if result_r.result && result_w.result {
 			res = 1
 		}
 	case O_R:
-		if result_r {
+		if result_r.result {
 			res = 1
 		}
 	case O_W:
-		if result_w {
+		if result_w.result {
 			res = 1
 		}
 	}
 
 	metrics.run.WithLabelValues(metrics.values...).Set(res)
-	metrics.latency_r.WithLabelValues(metrics.values...).Set(elapsed_r)
-	metrics.latency_w.WithLabelValues(metrics.values...).Set(elapsed_w)
+	metrics.latency_r.WithLabelValues(metrics.values...).Set(result_r.elapsed)
+	metrics.latency_w.WithLabelValues(metrics.values...).Set(result_w.elapsed)
 }
