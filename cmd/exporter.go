@@ -33,7 +33,7 @@ func NewExporter(conf *Config, alloc *Alloc, metrics *Metrics) *Exporter {
 }
 
 // starts the primary go-routine, which will run the io checks for ever
-func (exp *Exporter) RunIOchecks() sync.WaitGroup {
+func (exp *Exporter) RunIOchecks() *sync.WaitGroup {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
@@ -65,7 +65,7 @@ func (exp *Exporter) RunIOchecks() sync.WaitGroup {
 		}
 	}()
 
-	return wg
+	return &wg
 }
 
 // call an io measurement and collect time needed
