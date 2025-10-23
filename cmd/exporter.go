@@ -78,6 +78,11 @@ func (exp *Exporter) measure(mode int) Result {
 	now := time.Now()
 	elapsed := float64(now.Sub(start).Nanoseconds()) / 10000000000
 
+	// makes no sense to measure latency if operation failed
+	if !result {
+		elapsed = 0
+	}
+
 	return Result{elapsed: elapsed, result: result}
 }
 
