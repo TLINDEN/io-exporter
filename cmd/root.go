@@ -31,7 +31,7 @@ func Run() {
 	alloc := NewAlloc()
 	exporter := NewExporter(conf, alloc, metrics)
 
-	exporter.RunIOchecks()
+	wg := exporter.RunIOchecks()
 
 	http.Handle("/metrics", promhttp.HandlerFor(
 		metrics.registry,
@@ -49,6 +49,8 @@ func Run() {
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil); err != nil {
 		log.Fatal(err)
 	}
+
+	wg.Wait()
 }
 
 func report(err error, fd *os.File) bool {

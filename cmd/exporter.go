@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/ncw/directio"
@@ -32,7 +33,10 @@ func NewExporter(conf *Config, alloc *Alloc, metrics *Metrics) *Exporter {
 }
 
 // starts the primary go-routine, which will run the io checks for ever
-func (exp *Exporter) RunIOchecks() {
+func (exp *Exporter) RunIOchecks() sync.WaitGroup {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
 	go func() {
 		for {
 			var res_r, res_w Result
@@ -60,6 +64,8 @@ func (exp *Exporter) RunIOchecks() {
 			time.Sleep(time.Duration(exp.conf.Sleeptime) * time.Second)
 		}
 	}()
+
+	return wg
 }
 
 // call an io measurement and collect time needed
