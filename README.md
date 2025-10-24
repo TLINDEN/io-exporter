@@ -98,7 +98,7 @@ as a starting point to integrate it into your monitoring setup.
 
 It looks like this:
 
-![Screenshot](https://github.com/TLINDEN/io-exporter/blob/main/grafana/screenshot.png)
+![Screenshot](https://github.com/TLINDEN/io-exporter/blob/grafana/grafana/screenshot.png)
 
 # Report bugs
 
