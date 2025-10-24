@@ -91,6 +91,15 @@ Or use the pre-build image:
 docker run -u `id -u $USER` -v ./t:/pvc ghcr.io/tlinden/io-exporter:latest /pvc/testfile
 ```
 
+## Grafana
+
+I provide a [sample dashboard](grafana), which you can add to your grafana or use
+as a starting point to integrate it into your monitoring setup.
+
+It looks like this:
+
+![Screenshot](https://github.com/TLINDEN/io-exporter/blob/main/grafana/screenshot.png)
+
 # Report bugs
 
 [Please open an issue](https://github.com/TLINDEN/io-exporter/issues). Thanks!
