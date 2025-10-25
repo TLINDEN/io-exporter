@@ -8,6 +8,10 @@ import (
 	"os"
 	"strings"
 
+	// enable to debug with roumon
+	//_ "net/http/pprof"
+	// then: roumon -host=localhost -port=9187
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -25,6 +29,10 @@ func Run() {
 		os.Exit(0)
 	}
 
+	if conf.Showhelp {
+		fmt.Println(Usage)
+		os.Exit(0)
+	}
 	setLogger(os.Stdout, conf.Debug)
 
 	metrics := NewMetrics(conf)
