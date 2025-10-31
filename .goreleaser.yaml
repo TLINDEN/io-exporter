@@ -36,8 +36,6 @@ archives:
     files:
       - src: "*.md"
         strip_parent: true
-      - src: "docs/*"
-        strip_parent: true
       - src: Makefile.dist
         dst: Makefile
     wrap_in_directory: true
