@@ -1,8 +1,0 @@
-services:
-  ioexporter:
-    container_name: io-exporter
-    volumes:
-      - ${PWD}:/pvc
-    working_dir: /pvc
-    build: .
-    image: io-exporter:latest
