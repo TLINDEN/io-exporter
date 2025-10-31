@@ -1,4 +1,4 @@
-module github.com/tlinden/io-exporter
+module codeberg.org/scip/io-exporter
 
 go 1.23.5
 

@@ -1,6 +1,6 @@
-[![Actions](https://github.com/tlinden/io-exporter/actions/workflows/ci.yaml/badge.svg)](https://github.com/tlinden/io-exporter/actions)
-[![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/tlinden/io-exporter/blob/master/LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/tlinden/io-exporter)](https://goreportcard.com/report/github.com/tlinden/io-exporter)
+[![Actions](https://codeberg.org/scip/io-exporter/actions/workflows/ci.yaml/badge.svg)](https://codeberg.org/scip/io-exporter/actions)
+[![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://codeberg.org/scip/io-exporter/raw/branch/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/codeberg.org/scip/io-exporter)](https://goreportcard.com/report/codeberg.org/scip/io-exporter)
 
 # io-exporter
 
@@ -88,7 +88,7 @@ docker compose run -v ./t:/pvc ioexporter /pvc/testfile
 Or use the pre-build image:
 
 ```default
-docker run -u `id -u $USER` -v ./t:/pvc ghcr.io/tlinden/io-exporter:latest /pvc/testfile
+docker run -u `id -u $USER` -v ./t:/pvc codeberg.org/scip/io-exporter:latest /pvc/testfile
 ```
 
 ## Grafana
@@ -98,11 +98,11 @@ as a starting point to integrate it into your monitoring setup.
 
 It looks like this:
 
-![Screenshot](https://github.com/TLINDEN/io-exporter/blob/main/grafana/screenshot.png)
+![Screenshot](https://codeberg.org/scip/io-exporter/raw/branch/main/grafana/screenshot.png)
 
 # Report bugs
 
-[Please open an issue](https://github.com/TLINDEN/io-exporter/issues). Thanks!
+[Please open an issue](https://codeberg.org/scip/io-exporter/issues). Thanks!
 
 # License
 
