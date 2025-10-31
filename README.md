@@ -1,5 +1,4 @@
 [![status-badge](https://ci.codeberg.org/api/badges/15500/status.svg?branch=main)](https://ci.codeberg.org/repos/15500)
-[![Actions](https://codeberg.org/scip/io-exporter/actions/workflows/ci.yaml/badge.svg)](https://codeberg.org/scip/io-exporter/actions)
 [![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://codeberg.org/scip/io-exporter/raw/branch/master/LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/codeberg.org/scip/io-exporter)](https://goreportcard.com/report/codeberg.org/scip/io-exporter)
 
